@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const LatLng sourceLocation = LatLng(
     24.96517,
     67.067446,);
-  static const LatLng destination = LatLng(24.966292,67.077423);
+  static const LatLng destination = LatLng(24.966292,67.0774);
   final List<Marker> _markers = <Marker>[];
 
   final Set<Polyline> _polylines={};
@@ -122,23 +122,45 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
     for(int i =0 ; i<latlng.length; i++){
+      _markers.add(
+        Marker(
+            markerId: MarkerId(i.toString()),
+          position: latlng[i],
+          infoWindow: InfoWindow(
+            title: i.toString(),
+            snippet: '5 Star'
+          ),
+          icon: BitmapDescriptor.defaultMarker
+        ),
+      );
+      _polylines.add(
+          Polyline(polylineId: PolylineId('1'),
+              points: latlng,
+            width: 4,
+            color: Colors.blue
 
+          )
+      );
     }
-    loadData();
+    setState(() {
+
+    });
+
+    // loadData();
     // getPolyPoints();
 
-    _markers.add(
-      Marker(
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-          markerId: const MarkerId('SomeId'),
-          position: const LatLng(
-            24.96517,
-            67.067446,),
-          infoWindow: const InfoWindow(
-              title: 'The title of the marker'
-          )
-      ),
-    );
+    // _markers.add(
+    //   Marker(
+    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+    //       markerId: const MarkerId('SomeId'),
+    //       position: const LatLng(
+    //         24.96517,
+    //         67.067446,),
+    //       infoWindow: const InfoWindow(
+    //           title: 'The title of the marker'
+    //       )
+    //   ),
+    // );
 
   }
 
@@ -164,14 +186,15 @@ class _HomeScreenState extends State<HomeScreen> {
               onMapCreated: (GoogleMapController controller){
                 _controller.complete(controller);
               },
-              polylines: {
-                Polyline(
-                  polylineId: const PolylineId("route"),
-                  points: polylineCoordinates,
-                  color: Colors.blue,
-                  width: 6,
-                ),
-              },
+              polylines: _polylines,
+              // polylines: {
+              //   Polyline(
+              //     polylineId: const PolylineId("route"),
+              //     points: polylineCoordinates,
+              //     color: Colors.blue,
+              //     width: 6,
+              //   ),
+              // },
             )
         ),
       floatingActionButton: Padding(
