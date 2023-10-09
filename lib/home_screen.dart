@@ -11,11 +11,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
   //Google API KEY
   final String googleAPIKey = "AIzaSyC0358aIVmuU_omogKareCKAN6R8U31UgY";
 
   // Controller for Google Map
   final Completer<GoogleMapController> _controller = Completer();
+  late LatLng _userLocation;
+  late Timer _timer;
 
   //static source (not used)
   static const LatLng sourceLocation = LatLng(
@@ -24,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   //Static destination (Will be recieved from cloud database)
-  static const LatLng destination = LatLng(24.969503, 67.067073);
+  static const LatLng destination = LatLng(24.969503, 67.067073); // change this LatLng as per your location
 
   //List of Markers
   final List<Marker> _markers = <Marker>[];
@@ -49,8 +52,44 @@ class _HomeScreenState extends State<HomeScreen> {
         .onError((error, stackTrace) {
       print("error: $error");
     });
-    return await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
   }
+
+
+  void trackUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+      );
+      LatLng userLocation = LatLng(position.latitude, position.longitude);
+
+      // Add the user's current location as a marker
+      _markers.add(
+        Marker(
+          markerId: MarkerId(userLocation.toString()),
+          position: userLocation,
+          icon: BitmapDescriptor.defaultMarker,
+          // WithHue(BitmapDescriptor.hueViolet),
+        ),
+      );
+
+      setState(() {});
+
+      // Animate the camera to the user's new location
+      // GoogleMapController controller = await _controller.future;
+      // controller.animateCamera(
+      //   CameraUpdate.newCameraPosition(
+      //     CameraPosition(
+      //       target: userLocation,
+      //       zoom: 18,
+      //     ),
+      //   ),
+      // );
+    } catch (e) {
+      print("Error getting user location: $e");
+    }
+  }
+
 
   //Function to display user current location in init state.
   loadData() async {
@@ -89,6 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     loadData();
 
+    _timer = Timer.periodic(const Duration(seconds: 40), (Timer timer) {
+      trackUserLocation();
+    });
+
     // all the locations in latlng is being added in polyline set
     for (int i = 0; i < latlng.length; i++) {
       _markers.add(
@@ -118,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             markers: Set<Marker>.of(_markers),
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
+
             },
             polylines: _polylines,
           )),
